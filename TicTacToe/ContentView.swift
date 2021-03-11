@@ -7,10 +7,18 @@
 
 import SwiftUI
 
+class Player: ObservableObject {
+    @Published var turn = false
+    @Published var score = 0
+}
+
 struct ContentView: View {
     var body: some View {
         GridStack(rows: 3, columns: 3) { row, col in
-            Text("(\(row),\(col))")
+//            let action = {
+//                print("tapped: (\(col),\(row))")
+//            }
+            Mark()
         }
     }
 }
@@ -36,6 +44,41 @@ struct GridStack<T: View>: View {
         self.rows = rows
         self.columns = columns
         self.content = content
+    }
+}
+
+struct PlayerTurnView: View {
+    @EnvironmentObject var player: Player
+
+    var body: some View {
+        Text("\(player.score)")
+    }
+}
+
+struct Mark: View {
+    @StateObject private var player = Player()
+    
+    let square = Image(systemName: "square")
+    let xmark = Image(systemName: "xmark")
+    let circle = Image(systemName: "circle")
+    
+    var body: some View {
+        ZStack {
+            Button(action: {
+                player.score += 1
+                player.turn.toggle()
+            }) {
+                ZStack {
+                    if player.turn {
+                        xmark.font(.system(size: 60))
+                    } else {
+                        square.font(.system(size: 60))
+                    }
+                    PlayerTurnView()
+                }
+            }
+        }
+        .environmentObject(player)
     }
 }
 
