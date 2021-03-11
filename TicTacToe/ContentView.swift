@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    let data = (1...9).map { "\($0)" }
-    var columns = [GridItem(.fixed(6))]
     var body: some View {
         GridStack(rows: 3, columns: 3) { row, col in
             Text("(\(row),\(col))")
