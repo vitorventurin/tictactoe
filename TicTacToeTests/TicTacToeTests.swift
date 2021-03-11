@@ -50,6 +50,14 @@ class TicTacToeTests: XCTestCase {
         XCTAssertTrue(Position("o   o   o", "x").isWinFor("o"))
         XCTAssertTrue(Position("  o o o  ", "x").isWinFor("o"))
     }
+    
+    func testMinMax() {
+        XCTAssertEqual(6, Position("xxx      ", "x").minmax())
+        XCTAssertEqual(-6, Position("ooo      ", "o").minmax())
+        XCTAssertEqual(0, Position("xoxxoxoxo", "x").minmax())
+        XCTAssertEqual(6, Position("xx       ", "x").minmax())
+        XCTAssertEqual(-6, Position("oo       ", "o").minmax())
+    }
 }
 
 class Position: CustomStringConvertible {
@@ -88,7 +96,6 @@ class Position: CustomStringConvertible {
     }
     
     func possibleMoves() -> [Int] {
-        print(board.description)
         var list = [Int]()
         for i in 0..<board.count {
             if board[i] == " " {
@@ -106,8 +113,8 @@ class Position: CustomStringConvertible {
         for i in 0..<dimension {
             isWin = isWin || lineMatch(turn: turn, start: i, end: size, step: dimension) // vertical line
         }
-        isWin = isWin || lineMatch(turn: turn, start: 0, end: size, step: dimension+1) // diagonal from left to right
-        isWin = isWin || lineMatch(turn: turn, start: dimension-1, end: size-1, step: dimension-1) // diagonal from right to left
+        isWin = isWin || lineMatch(turn: turn, start: 0, end: size, step: dimension+1) // diagonal from top left to bottom right
+        isWin = isWin || lineMatch(turn: turn, start: dimension-1, end: size-1, step: dimension-1) // diagonal from top right to bottom left
         return isWin
     }
     
@@ -118,6 +125,28 @@ class Position: CustomStringConvertible {
             }
         }
         return true
+    }
+    
+    func blanks() -> Int {
+        return board.filter { $0 == " " }.count
+    }
+    
+    func minmax() -> Int {
+        if isWinFor("x") {
+            return blanks()
+        }
+        if isWinFor("o") {
+            return -blanks()
+        }
+        if blanks() == 0 {
+            return 0
+        }
+        var list = [Int]()
+        for idx in possibleMoves() {
+            list.append(move(idx).minmax())
+            unmove(idx)
+        }
+        return turn == "x" ? list.max()! : list.min()!
     }
     
     var description: String {
