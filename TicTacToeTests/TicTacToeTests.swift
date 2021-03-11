@@ -144,7 +144,7 @@ class Position: CustomStringConvertible {
         var list = [Int]()
         for idx in possibleMoves() {
             list.append(move(idx).minmax())
-            unmove(idx)
+            _ = unmove(idx)
         }
         return turn == "x" ? list.max()! : list.min()!
     }
