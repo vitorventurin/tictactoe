@@ -42,6 +42,14 @@ class TicTacToeTests: XCTestCase {
         }
         XCTAssertEqual(list, Position().move(1).move(2).possibleMoves())
     }
+    
+    func testIsWinFor() throws {
+        XCTAssertFalse(Position().isWinFor("x"))
+        XCTAssertTrue(Position("xxx      ", "x").isWinFor("x"))
+        XCTAssertTrue(Position("x  x  x  ", "x").isWinFor("x"))
+        XCTAssertTrue(Position("o   o   o", "x").isWinFor("o"))
+        XCTAssertTrue(Position("  o o o  ", "x").isWinFor("o"))
+    }
 }
 
 class Position: CustomStringConvertible {
@@ -58,6 +66,13 @@ class Position: CustomStringConvertible {
         for _ in 0..<size {
             board.append(" ")
         }
+    }
+    
+    init(_ string: String, _ char: Character) {
+        size = dimension * dimension
+        board = Array(string)
+        board.reserveCapacity(size)
+        turn = char
     }
     
     func move(_ index: Int) -> Position {
@@ -81,6 +96,28 @@ class Position: CustomStringConvertible {
             }
         }
         return list
+    }
+    
+    func isWinFor(_ turn: Character) -> Bool {
+        var isWin = false
+        for i in stride(from: 0, through: size-1, by: dimension) {
+            isWin = isWin || lineMatch(turn: turn, start: i, end: i + dimension, step: 1) // horizontal line
+        }
+        for i in 0..<dimension {
+            isWin = isWin || lineMatch(turn: turn, start: i, end: size, step: dimension) // vertical line
+        }
+        isWin = isWin || lineMatch(turn: turn, start: 0, end: size, step: dimension+1) // diagonal from left to right
+        isWin = isWin || lineMatch(turn: turn, start: dimension-1, end: size-1, step: dimension-1) // diagonal from right to left
+        return isWin
+    }
+    
+    func lineMatch(turn: Character, start: Int, end: Int, step: Int) -> Bool {
+        for i in stride(from: start, through: end-1, by: step) {
+            if board[i] != turn {
+                return false
+            }
+        }
+        return true
     }
     
     var description: String {
