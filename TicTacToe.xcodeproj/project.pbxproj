@@ -99,10 +99,10 @@
 			children = (
 				C9B8E8B725FA54BA00223195 /* TicTacToeApp.swift */,
 				C9B8E8B925FA54BA00223195 /* ContentView.swift */,
+				C9B8E8E525FA95D600223195 /* Game.swift */,
 				C9B8E8BB25FA54BA00223195 /* Assets.xcassets */,
 				C9B8E8C025FA54BA00223195 /* Info.plist */,
 				C9B8E8BD25FA54BA00223195 /* Preview Content */,
-				C9B8E8E525FA95D600223195 /* Game.swift */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";

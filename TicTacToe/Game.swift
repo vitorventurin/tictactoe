@@ -7,52 +7,71 @@
 
 import Foundation
 
+enum Turn: String {
+    case empty = " "
+    case cpu = "o"
+    case human = "x"
+}
+
 class Game: CustomStringConvertible, Comparable {
-    var turn: Character
-    var board: [Character]
+    var turn: Turn
+    var board: [Turn]
     var dimension = 3
     var size: Int
     
     init() {
-        turn = "x"
+        turn = .human
         size = dimension * dimension
         board = []
         board.reserveCapacity(size)
         for _ in 0..<size {
-            board.append(" ")
+            board.append(.empty)
         }
     }
     
-    init(_ string: String, _ char: Character) {
+    init(_ string: String, _ turn: Turn) {
         size = dimension * dimension
-        board = Array(string)
+        board = []
         board.reserveCapacity(size)
-        turn = char
+        self.turn = turn
+        board = self.convertStringToTurns(string)
+    }
+    
+    func convertStringToTurns(_ string: String) -> [Turn] {
+        let turns: [Turn] = string.map {
+            switch $0 {
+            case " ": return .empty
+            case "x": return .human
+            case "o": return .cpu
+            default: return .empty
+            }
+        }
+        return turns
     }
     
     func move(_ index: Int) -> Game {
         board[index] = turn
-        turn = turn == "x" ? "o" : "x"
+        turn = turn == .human ? .cpu : .human
         return self
     }
     
     func unmove(_ index: Int) -> Game {
-        board[index] = " "
-        turn = turn == "x" ? "o" : "x"
+        board[index] = .empty
+        turn = turn == .human ? .cpu : .human
         return self
     }
     
     func possibleMoves() -> [Int] {
         var list = [Int]()
         for i in 0..<board.count {
-            if board[i] == " " {
+            if board[i] == .empty {
                 list.append(i)
             }
         }
         return list
     }
     
-    func isWinFor(_ turn: Character) -> Bool {
+    func isWinFor(_ turn: Turn) -> Bool {
         var isWin = false
         for i in stride(from: 0, through: size-1, by: dimension) {
             isWin = isWin || lineMatch(turn: turn, start: i, end: i + dimension, step: 1) // horizontal line
@@ -65,7 +84,7 @@ class Game: CustomStringConvertible, Comparable {
         return isWin
     }
     
-    func lineMatch(turn: Character, start: Int, end: Int, step: Int) -> Bool {
+    func lineMatch(turn: Turn, start: Int, end: Int, step: Int) -> Bool {
         for i in stride(from: start, through: end-1, by: step) {
             if board[i] != turn {
                 return false
@@ -75,14 +94,14 @@ class Game: CustomStringConvertible, Comparable {
     }
     
     func blanks() -> Int {
-        return board.filter { $0 == " " }.count
+        return board.filter { $0 == .empty }.count
     }
     
     func minmax() -> Int {
-        if isWinFor("x") {
+        if isWinFor(.human) {
             return blanks()
         }
-        if isWinFor("o") {
+        if isWinFor(.cpu) {
             return -blanks()
         }
         if blanks() == 0 {
@@ -93,16 +112,16 @@ class Game: CustomStringConvertible, Comparable {
             list.append(move(idx).minmax())
             _ = unmove(idx)
         }
-        return turn == "x" ? list.max()! : list.min()!
+        return turn == .human ? list.max()! : list.min()!
     }
     
     func bestMove() -> Int {
         let list: [Int] = possibleMoves()
-        return turn == "x" ? list.max(by: >)! : list.min(by: <)!
+        return turn == .human ? list.max(by: >)! : list.min(by: <)!
     }
     
     func isGameEnded() -> Bool {
-        return isWinFor("x") || isWinFor("o") || blanks() == 0 // x won or o won or game has drawn
+        return isWinFor(.human) || isWinFor(.cpu) || blanks() == 0 // human won or cpu won or game has drawn
     }
     
     //- MARK: Comparable
@@ -116,6 +135,6 @@ class Game: CustomStringConvertible, Comparable {
     
     //- MARK: CustomStringConvertible
     var description: String {
-        return board.map { "\($0)" }.joined()
+        return board.map { "\($0.rawValue)" }.joined()
     }
 }

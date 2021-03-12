@@ -18,7 +18,7 @@ struct ContentView: View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
             ForEach(Array(zip(gameVieModel.data.indices, gameVieModel.data)), id: \.0) { idx, item in
                 Button(action: {
-                    if item == " " {
+                    if item == .empty {
                         gameVieModel.move(idx)
                         if (!gameVieModel.isEnded()) {
                             let bestMove = gameVieModel.bestMove()
@@ -31,7 +31,7 @@ struct ContentView: View {
                         gameVieModel.refreshData()
                     }
                 }, label: {
-                    Text(String(item))
+                    Text(item.rawValue)
                         .font(.system(size: 40))
                 })
                 .frame(width: 40, height: 40, alignment: .center)
@@ -50,7 +50,7 @@ struct ContentView: View {
 
 class GameViewModel: ObservableObject, CustomStringConvertible {
     private var game = Game()
-    @Published var data = [Character]()
+    @Published var data = [Turn]()
     
     init() {
         data = game.board
@@ -73,7 +73,7 @@ class GameViewModel: ObservableObject, CustomStringConvertible {
     }
     
     func theWinnerIs() -> String {
-        return game.isWinFor("x") ? "You won!" : game.isWinFor("o") ? "CPU won!" : "Draw!"
+        return game.isWinFor(.human) ? "You won!" : game.isWinFor(.cpu) ? "CPU won!" : "Draw!"
     }
     
     func playAgain() {
