@@ -10,32 +10,41 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var gameVieModel = GameViewModel()
     @State private var showingAlert = false
+    let columns = [
+          GridItem(.adaptive(minimum: 40), alignment: .center)
+        ]
     
     var body: some View {
-        HStack {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
             ForEach(Array(zip(gameVieModel.data.indices, gameVieModel.data)), id: \.0) { idx, item in
                 Button(action: {
-                    gameVieModel.move(idx)
-                    if (!gameVieModel.isEnded()) {
-                        let bestMove = gameVieModel.bestMove()
-                        gameVieModel.move(bestMove)
+                    if item == " " {
+                        gameVieModel.move(idx)
+                        if (!gameVieModel.isEnded()) {
+                            let bestMove = gameVieModel.bestMove()
+                            gameVieModel.move(bestMove)
+                        }
+                        if (gameVieModel.isEnded()) {
+                            showingAlert = true
+                        }
+                        // print(gameVieModel.description)
+                        gameVieModel.refreshData()
                     }
-                    if (gameVieModel.isEnded()) {
-                        showingAlert = true
-                    }
-                    // print(gameVieModel.description)
-                    gameVieModel.refreshData()
                 }, label: {
                     Text(String(item))
                         .font(.system(size: 40))
                 })
                 .frame(width: 40, height: 40, alignment: .center)
                 .background(Color.yellow)
-                .alert(isPresented: $showingAlert, content: {
-                    Alert(title: Text(gameVieModel.theWinnerIs()))
-                })
             }
         }
+        .frame(width: 145, height: 120, alignment: .center)
+        .alert(isPresented: $showingAlert, content: {
+            Alert(title: Text(gameVieModel.theWinnerIs()), dismissButton: .default(Text("Play Again!"), action: {
+                gameVieModel.playAgain()
+                gameVieModel.refreshData()
+            }))
+        })
     }
 }
 
@@ -64,7 +73,11 @@ class GameViewModel: ObservableObject, CustomStringConvertible {
     }
     
     func theWinnerIs() -> String {
-        return game.isWinFor("x") ? "You won!" : "CPU won!"
+        return game.isWinFor("x") ? "You won!" : game.isWinFor("o") ? "CPU won!" : "Draw!"
+    }
+    
+    func playAgain() {
+        game = Game()
     }
     
     var description: String {
@@ -72,8 +85,8 @@ class GameViewModel: ObservableObject, CustomStringConvertible {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ContentView()
+//    }
+//}
