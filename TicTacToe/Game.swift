@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Game: Comparable, CustomStringConvertible {
+class Game: CustomStringConvertible, Comparable {
     var turn: Character
     var board: [Character]
     var dimension = 3
@@ -109,7 +109,7 @@ class Game: Comparable, CustomStringConvertible {
     static func < (lhs: Game, rhs: Game) -> Bool {
         return lhs.minmax() < rhs.minmax()
     }
-    
+
     static func == (lhs: Game, rhs: Game) -> Bool {
         return lhs.minmax() == rhs.minmax()
     }

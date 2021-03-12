@@ -7,78 +7,68 @@
 
 import SwiftUI
 
-class Player: ObservableObject {
-    @Published var turn = false
-    @Published var score = 0
-}
-
 struct ContentView: View {
-    var body: some View {
-        GridStack(rows: 3, columns: 3) { row, col in
-//            let action = {
-//                print("tapped: (\(col),\(row))")
-//            }
-            Mark()
-        }
-    }
-}
-
-struct GridStack<T: View>: View {
-    let rows: Int
-    let columns: Int
-    let content: (Int, Int) -> T
+    @ObservedObject var gameVieModel = GameViewModel()
+    @State private var showingAlert = false
     
     var body: some View {
-        VStack {
-            ForEach(0..<rows, id: \.self) { row in
-                HStack {
-                    ForEach(0..<columns, id: \.self) { column in
-                        content(row, column)
+        HStack {
+            ForEach(Array(zip(gameVieModel.data.indices, gameVieModel.data)), id: \.0) { idx, item in
+                Button(action: {
+                    gameVieModel.move(idx)
+                    if (!gameVieModel.isEnded()) {
+                        let bestMove = gameVieModel.bestMove()
+                        gameVieModel.move(bestMove)
                     }
-                }
+                    if (gameVieModel.isEnded()) {
+                        showingAlert = true
+                    }
+                    // print(gameVieModel.description)
+                    gameVieModel.refreshData()
+                }, label: {
+                    Text(String(item))
+                        .font(.system(size: 40))
+                })
+                .frame(width: 40, height: 40, alignment: .center)
+                .background(Color.yellow)
+                .alert(isPresented: $showingAlert, content: {
+                    Alert(title: Text(gameVieModel.theWinnerIs()))
+                })
             }
         }
     }
-    
-    init(rows: Int, columns: Int, @ViewBuilder content: @escaping (Int, Int) -> T) {
-        self.rows = rows
-        self.columns = columns
-        self.content = content
-    }
 }
 
-struct PlayerTurnView: View {
-    @EnvironmentObject var player: Player
-
-    var body: some View {
-        Text("\(player.score)")
+class GameViewModel: ObservableObject, CustomStringConvertible {
+    private var game = Game()
+    @Published var data = [Character]()
+    
+    init() {
+        data = game.board
     }
-}
-
-struct Mark: View {
-    @StateObject private var player = Player()
     
-    let square = Image(systemName: "square")
-    let xmark = Image(systemName: "xmark")
-    let circle = Image(systemName: "circle")
+    func refreshData() {
+        data = game.board
+    }
     
-    var body: some View {
-        ZStack {
-            Button(action: {
-                player.score += 1
-                player.turn.toggle()
-            }) {
-                ZStack {
-                    if player.turn {
-                        xmark.font(.system(size: 60))
-                    } else {
-                        square.font(.system(size: 60))
-                    }
-                    PlayerTurnView()
-                }
-            }
-        }
-        .environmentObject(player)
+    func move(_ index: Int) {
+        _ = game.move(index)
+    }
+    
+    func bestMove() -> Int {
+        return game.bestMove()
+    }
+    
+    func isEnded() -> Bool {
+        return game.isGameEnded()
+    }
+    
+    func theWinnerIs() -> String {
+        return game.isWinFor("x") ? "You won!" : "CPU won!"
+    }
+    
+    var description: String {
+        return game.board.description
     }
 }
 
